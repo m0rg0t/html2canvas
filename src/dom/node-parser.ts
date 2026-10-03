@@ -37,7 +37,7 @@ const parseNodeTree = (context: Context, node: Node, parent: ElementContainer, r
                     }
 
                     parent.elements.push(container);
-                    childNode.slot;
+                    void childNode.slot;
                     if (childNode.shadowRoot) {
                         parseNodeTree(context, childNode.shadowRoot, container, root);
                     } else if (

@@ -46,7 +46,7 @@ testList
         return !Array.isArray(ignoredTests[test]) || ignoredTests[test].indexOf(platform.name || '') === -1;
     })
     .forEach((url) => {
-        describe(url, function () {
+        describe(url, function (this: Mocha.Suite) {
             this.timeout(60000);
             this.retries(2);
             const windowWidth = 800;

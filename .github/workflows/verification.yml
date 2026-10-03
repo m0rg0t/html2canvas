@@ -1,0 +1,115 @@
+name: Current library verification
+on:
+  pull_request:
+  push:
+    branches: [master]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run unittest -- --runInBand
+      - run: npm run build
+      - run: npm run test:artifacts
+      - run: npm run test:tooling
+      - name: Check out original renderer for visual comparison
+        uses: actions/checkout@v7
+        with:
+          repository: m0rg0t/html2canvas
+          ref: 6020386bbeed60ad68e675fdcaa6220e292fd35a
+          path: .maintenance-baseline
+          persist-credentials: false
+      - name: Build original renderer with its committed dependency graph
+        working-directory: .maintenance-baseline
+        run: |
+          npm ci --ignore-scripts --no-audit
+          npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Verify retained browser-tool API with patched dependencies
+        run: CHROME_PATH="$(node -p "require('playwright').chromium.executablePath()")" xvfb-run --auto-servernum npm run test:legacy-browser
+        env:
+          AWS_EC2_METADATA_DISABLED: 'true'
+      - run: npm run test:rendering
+        env:
+          BASELINE_BUNDLE: .maintenance-baseline/dist/html2canvas.js
+      - uses: actions/upload-artifact@v7
+        with:
+          name: verified-dist
+          path: dist
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: verified-browser-tests
+          path: build
+          if-no-files-found: error
+  browser:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            browser: Chrome_Stable
+          - os: ubuntu-latest
+            browser: Firefox_Stable
+          - os: macos-15
+            browser: Safari_Stable
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    env:
+      TARGET_BROWSER: ${{ matrix.browser }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-dist
+          path: dist
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-browser-tests
+          path: build
+      - name: Run Linux browser fixtures
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum npm run karma
+      - name: Run native Safari fixtures
+        if: runner.os == 'macOS'
+        run: npm run karma
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: verification-screenshots-${{ matrix.browser }}
+          path: tmp/reftests
+          if-no-files-found: error
+  consumer-node8:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-dist
+          path: dist
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 8.17.0
+      - name: Import the published CommonJS bundle on its minimum Node major
+        run: node -e "require('assert').strictEqual(typeof require('./dist/html2canvas.js'), 'function')"

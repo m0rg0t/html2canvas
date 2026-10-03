@@ -49,7 +49,7 @@ describe('html2canvas', () => {
                 canvas: undefined
             })
         );
-        expect(DocumentCloner.destroy).toBeCalled();
+        expect(DocumentCloner.destroy).toHaveBeenCalled();
     });
 
     it('should have transparent background with backgroundColor: null', async () => {
@@ -88,6 +88,6 @@ describe('html2canvas', () => {
                 canvas: undefined
             })
         );
-        expect(DocumentCloner.destroy).not.toBeCalled();
+        expect(DocumentCloner.destroy).not.toHaveBeenCalled();
     });
 });

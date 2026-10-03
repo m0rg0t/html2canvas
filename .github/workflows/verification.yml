@@ -37,10 +37,6 @@ jobs:
           npm ci --ignore-scripts --no-audit
           npm run build
       - run: npx playwright install --with-deps chromium
-      - name: Verify retained browser-tool API with patched dependencies
-        run: CHROME_PATH="$(node -p "require('playwright').chromium.executablePath()")" xvfb-run --auto-servernum npm run test:legacy-browser
-        env:
-          AWS_EC2_METADATA_DISABLED: 'true'
       - run: npm run test:rendering
         env:
           BASELINE_BUNDLE: .maintenance-baseline/dist/html2canvas.js
@@ -113,3 +109,21 @@ jobs:
           node-version: 8.17.0
       - name: Import the published CommonJS bundle on its minimum Node major
         run: node -e "require('assert').strictEqual(typeof require('./dist/html2canvas.js'), 'function')"
+  legacy-tooling:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit
+      - run: npx playwright install --with-deps chromium
+      - name: Verify retained browser-tool API with patched dependencies
+        timeout-minutes: 2
+        run: CHROME_PATH="$(node -p "require('playwright').chromium.executablePath()")" xvfb-run --auto-servernum npm run test:legacy-browser
+        env:
+          AWS_EC2_METADATA_DISABLED: 'true'

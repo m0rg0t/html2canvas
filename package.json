@@ -119,7 +119,9 @@
     "test:artifacts": "node --test scripts/artifacts.test.cjs",
     "test:rendering": "node scripts/rendering-equivalence.mjs",
     "test:tooling": "node --test scripts/legacy-dependencies.test.cjs",
-    "test:legacy-browser": "node scripts/legacy-browser-smoke.cjs"
+    "test:legacy-browser": "node scripts/legacy-browser-smoke.cjs",
+    "test:website-deps": "node --test scripts/website-dependencies.test.cjs",
+    "test:website": "node scripts/website-equivalence.mjs"
   },
   "homepage": "https://html2canvas.hertzen.com",
   "license": "MIT",

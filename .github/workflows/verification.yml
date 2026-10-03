@@ -23,6 +23,7 @@ jobs:
       - run: npm run unittest -- --runInBand
       - run: npm run build
       - run: npm run test:artifacts
+      - run: npm pack --dry-run --ignore-scripts
       - run: npm run test:tooling
       - name: Check out original renderer for visual comparison
         uses: actions/checkout@v7
@@ -126,3 +127,77 @@ jobs:
         run: CHROME_PATH="$(command -v google-chrome)" xvfb-run --auto-servernum npm run test:legacy-browser
         env:
           AWS_EC2_METADATA_DISABLED: 'true'
+  website:
+    needs: [build, browser]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GATSBY_TELEMETRY_DISABLED: '1'
+      GATSBY_CPU_COUNT: '2'
+      NODE_OPTIONS: --max-old-space-size=3072
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check out original website for comparison
+        uses: actions/checkout@v7
+        with:
+          repository: m0rg0t/html2canvas
+          ref: 6020386bbeed60ad68e675fdcaa6220e292fd35a
+          path: .maintenance-website-baseline
+          persist-credentials: false
+      - name: Download the same synthetic browser results for both website builds
+        uses: actions/download-artifact@v8
+        with:
+          pattern: verification-screenshots-*
+          merge-multiple: true
+          path: .website-results
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 16.20.2
+      - name: Build the original library and website with its historical toolchain
+        working-directory: .maintenance-website-baseline
+        run: |
+          npm ci --ignore-scripts --no-audit
+          npm run build
+          npm ci --ignore-scripts --no-audit --prefix www
+          mkdir -p www/static/tests www/static/results
+          cp -R tests/reftests www/static/tests/reftests
+          cp -R tests/assets www/static/tests/assets
+          cp tests/test.js www/static/tests/test.js
+          cp -R ../.website-results/. www/static/results/
+          npm run build:reftest-result-list -- www/static/results/metadata www/src/results.json
+          npm run build:reftest-preview
+          npm run build --prefix www
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-dist
+          path: dist
+      - run: npm ci --ignore-scripts --no-audit --prefix www
+      - run: npm run test:website-deps
+      - name: Build the current website and reftest previewer
+        run: |
+          mkdir -p www/static/tests www/static/results
+          cp -R tests/reftests www/static/tests/reftests
+          cp -R tests/assets www/static/tests/assets
+          cp tests/test.js www/static/tests/test.js
+          cp -R .website-results/. www/static/results/
+          npm run build:reftest-result-list -- www/static/results/metadata www/src/results.json
+          npm run build:reftest-preview
+          npm run build --prefix www
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:website
+        env:
+          BASELINE_SITE: .maintenance-website-baseline/www/public
+      - name: Upload website comparison diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: website-comparison-diagnostics
+          path: test-results/website
+          if-no-files-found: ignore

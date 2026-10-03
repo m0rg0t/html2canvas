@@ -38,5 +38,31 @@
     "build": "npm run copy && gatsby build",
     "start": "gatsby develop",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "overrides": {
+    "chromeless": {
+      "chrome-launcher": "1.2.2",
+      "chrome-remote-interface": "0.34.0"
+    },
+    "request": {
+      "form-data": "2.5.6"
+    },
+    "@graphql-tools/url-loader": {
+      "form-data": "^4.0.6"
+    },
+    "gatsby": {
+      "react-dev-utils": {
+        ".": "11.0.4",
+        "shell-quote": "^1.9.0",
+        "loader-utils": "2.0.4",
+        "immer": "9.0.21"
+      }
+    },
+    "git-up": {
+      "parse-url": "^8.1.0"
+    },
+    "contentful-management": {
+      "type-fest": "2.19.0"
+    }
   }
 }

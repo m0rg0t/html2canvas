@@ -15,7 +15,9 @@ test('current Mocha runs assertions after ES5 transformation in a polyfilled leg
     const dom = new JSDOM('<!doctype html><body></body>', {runScripts: 'outside-only'});
     const {window} = dom;
     try {
-        window.eval('delete window.Map; delete window.Set; delete window.WeakMap; delete window.WeakSet; delete window.Symbol; delete window.Promise; delete window.Reflect; delete Object.values; delete Object.entries;');
+        window.eval('delete window.Map; delete window.Set; delete window.WeakMap; delete window.WeakSet; delete window.Symbol; delete window.Promise; delete window.Reflect; delete Object.values; delete Object.entries; delete console.assert;');
+        window.eval(readFileSync(require.resolve('./legacy-console.js'), 'utf8'));
+        assert.throws(() => window.console.assert(false, 'synthetic assertion'), /synthetic assertion/);
         for (const name of ['es5', 'es6', 'es2017']) {
             const polyfill = readFileSync(require.resolve(`js-polyfills/${name}.js`), 'utf8');
             parse(polyfill, {ecmaVersion: 5});

@@ -145,6 +145,10 @@ module.exports = function(config) {
                     included: true, served: true, watched: false
                 });
             }
+            files.unshift({
+                pattern: path.resolve(__dirname, 'scripts/legacy-console.js'),
+                included: true, served: true, watched: false
+            });
         }
         files.unshift({
             pattern: path.resolve(__dirname, './node_modules/js-polyfills/typedarray.js'),

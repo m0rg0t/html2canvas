@@ -125,6 +125,7 @@ module.exports = function(config) {
     };
 
     const ciLauncher = launchers[process.env.TARGET_BROWSER];
+    const legacyIE = !!ciLauncher && (ciLauncher.base === 'IE' || ciLauncher.browserName === 'internet explorer');
 
     const customLaunchers = ciLauncher ? {target_browser: ciLauncher} : {
         stable_chrome: {
@@ -138,7 +139,7 @@ module.exports = function(config) {
     const injectTypedArrayPolyfills = function(files) {
         // The framework runs before fixture iframes: retain the original browser
         // behavior under test while adapting Mocha's own modern runtime for IE.
-        if (/^IE_/.test(process.env.TARGET_BROWSER || '')) {
+        if (legacyIE) {
             for (const file of ['es2017.js', 'es6.js', 'es5.js']) {
                 files.unshift({
                     pattern: path.resolve(__dirname, 'node_modules/js-polyfills', file),
@@ -244,7 +245,7 @@ module.exports = function(config) {
 
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-        preprocessors: /^IE_/.test(process.env.TARGET_BROWSER || '') ? {
+        preprocessors: legacyIE ? {
             '**/node_modules/mocha/mocha.js': ['legacy-mocha']
         } : {},
 

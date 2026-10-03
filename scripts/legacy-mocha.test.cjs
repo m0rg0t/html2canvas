@@ -5,6 +5,29 @@ const {JSDOM} = require('jsdom');
 const {parse} = require('acorn');
 const {transformMocha} = require('./legacy-mocha.cjs');
 
+test('every configured IE launcher receives framework adaptation without changing fixture files', () => {
+    const configure = require('../karma.conf.js');
+    const previous = process.env.TARGET_BROWSER;
+    try {
+        for (const browser of ['IE_9', 'IE_10', 'IE_11', 'SauceLabs_IE9', 'SauceLabs_IE10', 'SauceLabs_IE11', 'Chrome_Stable']) {
+            process.env.TARGET_BROWSER = browser;
+            let config;
+            configure({set: value => { config = value; }});
+            const framework = config.plugins.find(plugin => typeof plugin === 'object' && plugin['framework:inline-mocha-fix']);
+            const files = [];
+            framework['framework:inline-mocha-fix'][1](files);
+            const isIE = browser !== 'Chrome_Stable';
+            assert.equal(Boolean(config.preprocessors['**/node_modules/mocha/mocha.js']), isIE, browser);
+            assert.equal(files.some(file => file.pattern.endsWith('legacy-console.js')), isIE, browser);
+            assert.ok(config.files.some(file => file.pattern === './tests/**/*'), 'Original fixture list must stay served');
+            assert.ok(config.files.every(file => file.pattern !== './node_modules/**/*'), 'Do not reopen the whole dependency tree');
+        }
+    } finally {
+        if (previous === undefined) delete process.env.TARGET_BROWSER;
+        else process.env.TARGET_BROWSER = previous;
+    }
+});
+
 test('current Mocha runs assertions after ES5 transformation in a polyfilled legacy global', async () => {
     const filename = require.resolve('mocha/mocha.js');
     const source = readFileSync(filename, 'utf8');

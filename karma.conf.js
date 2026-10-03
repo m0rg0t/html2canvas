@@ -136,6 +136,16 @@ module.exports = function(config) {
     };
 
     const injectTypedArrayPolyfills = function(files) {
+        // The framework runs before fixture iframes: retain the original browser
+        // behavior under test while adapting Mocha's own modern runtime for IE.
+        if (/^IE_/.test(process.env.TARGET_BROWSER || '')) {
+            for (const file of ['es2017.js', 'es6.js', 'es5.js']) {
+                files.unshift({
+                    pattern: path.resolve(__dirname, 'node_modules/js-polyfills', file),
+                    included: true, served: true, watched: false
+                });
+            }
+        }
         files.unshift({
             pattern: path.resolve(__dirname, './node_modules/js-polyfills/typedarray.js'),
             included: true,
@@ -204,7 +214,10 @@ module.exports = function(config) {
             'build/testrunner.js',
             { pattern: './tests/**/*', 'watched': true, 'included': false, 'served': true},
             { pattern: './dist/**/*', 'watched': true, 'included': false, 'served': true},
-            { pattern: './node_modules/**/*', 'watched': true, 'included': false, 'served': true},
+            // Serve only the dependencies requested by fixture pages. Scanning
+            // all development packages exhausts file handles on Windows.
+            { pattern: './node_modules/jquery/dist/jquery.min.js', watched: false, included: false, served: true },
+            { pattern: './node_modules/es6-promise/dist/es6-promise.auto.min.js', watched: false, included: false, served: true },
         ],
 
         plugins: [
@@ -214,6 +227,9 @@ module.exports = function(config) {
             },
             {
                 'launcher:MobileSafari': ['type', MobileSafari]
+            },
+            {
+                'preprocessor:legacy-mocha': ['factory', require('./scripts/legacy-mocha.cjs').createPreprocessor]
             }
         ],
 
@@ -224,8 +240,9 @@ module.exports = function(config) {
 
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-        preprocessors: {
-        },
+        preprocessors: /^IE_/.test(process.env.TARGET_BROWSER || '') ? {
+            '**/node_modules/mocha/mocha.js': ['legacy-mocha']
+        } : {},
 
 
         // test results reporter to use

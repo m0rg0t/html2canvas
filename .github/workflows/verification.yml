@@ -121,9 +121,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --ignore-scripts --no-audit
-      - run: npx playwright install --with-deps chromium
       - name: Verify retained browser-tool API with patched dependencies
         timeout-minutes: 2
-        run: CHROME_PATH="$(node -p "require('playwright').chromium.executablePath()")" xvfb-run --auto-servernum npm run test:legacy-browser
+        run: CHROME_PATH="$(command -v google-chrome)" xvfb-run --auto-servernum npm run test:legacy-browser
         env:
           AWS_EC2_METADATA_DISABLED: 'true'

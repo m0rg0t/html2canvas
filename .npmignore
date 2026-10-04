@@ -20,3 +20,12 @@ jest.config.js
 karma.conf.js
 karma.js
 rollup.config.ts
+
+# Maintainer configs and isolated verification outputs
+eslint.config.mjs
+rollup.config.mjs
+tsconfig.build.json
+test-results/
+.maintenance-baseline/
+.maintenance-website-baseline/
+.website-results/

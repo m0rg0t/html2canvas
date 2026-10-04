@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
     mode: 'development',
-    target: 'web',
+    target: ['web', 'es5'],
     entry:  path.resolve(__dirname, './src/preview.ts'),
     output: {
         path: path.resolve(__dirname, './static/tests'),

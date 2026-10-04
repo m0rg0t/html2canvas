@@ -78,7 +78,7 @@ screenshotApp.use((error: Error, _req: express.Request, _res: express.Response, 
     next();
 });
 
-const args = yargs(process.argv.slice(2)).number(['port', 'cors']).argv;
+const args = yargs(process.argv.slice(2)).options({port: {type: 'number'}, cors: {type: 'number'}}).parseSync();
 
 if (args.port) {
     app.listen(args.port, () => {

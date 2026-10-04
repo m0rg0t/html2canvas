@@ -4,6 +4,7 @@ import {default as platform} from 'platform';
 // @ts-ignore
 import Promise from 'es6-promise';
 import {ScreenshotRequest} from './types';
+import {uploadScreenshot} from './screenshot-upload';
 
 // @ts-ignore
 window.Promise = Promise;
@@ -11,34 +12,18 @@ const testRunnerUrl = location.href;
 const hasHistoryApi = typeof window.history !== 'undefined' && typeof window.history.replaceState !== 'undefined';
 
 const uploadResults = (canvas: HTMLCanvasElement, url: string) => {
-    return new Promise((resolve: () => void, reject: (error: string) => void) => {
-        // @ts-ignore
-        const xhr = 'withCredentials' in new XMLHttpRequest() ? new XMLHttpRequest() : new XDomainRequest();
-
-        xhr.onload = () => {
-            if (typeof xhr.status !== 'number' || xhr.status === 200) {
-                resolve();
-            } else {
-                reject(`Failed to send screenshot with status ${xhr.status}`);
-            }
-        };
-        xhr.onerror = reject;
-
-        const request: ScreenshotRequest = {
-            screenshot: canvas.toDataURL(),
-            test: url,
-            platform: {
-                name: platform.name,
-                version: platform.version
-            },
-            devicePixelRatio: window.devicePixelRatio || 1,
-            windowWidth: window.innerWidth,
-            windowHeight: window.innerHeight
-        };
-
-        xhr.open('POST', 'http://localhost:8000/screenshot', true);
-        xhr.send(JSON.stringify(request));
-    });
+    const request: ScreenshotRequest = {
+        screenshot: canvas.toDataURL(),
+        test: url,
+        platform: {
+            name: platform.name,
+            version: platform.version
+        },
+        devicePixelRatio: window.devicePixelRatio || 1,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight
+    };
+    return uploadScreenshot(request);
 };
 
 testList
@@ -46,7 +31,7 @@ testList
         return !Array.isArray(ignoredTests[test]) || ignoredTests[test].indexOf(platform.name || '') === -1;
     })
     .forEach((url) => {
-        describe(url, function () {
+        describe(url, function (this: Mocha.Suite) {
             this.timeout(60000);
             this.retries(2);
             const windowWidth = 800;

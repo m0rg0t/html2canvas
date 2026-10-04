@@ -25,6 +25,8 @@ export const enum LIST_STYLE_TYPE {
     GEORGIAN = 20,
     GUJARATI = 21,
     GURMUKHI = 22,
+    // Preserve existing enum values during the tooling migration.
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
     HEBREW = 22,
     HIRAGANA = 23,
     HIRAGANA_IROHA = 24,

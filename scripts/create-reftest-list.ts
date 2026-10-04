@@ -2,7 +2,7 @@
 
 import {readFileSync, writeFileSync} from 'fs';
 import {resolve, relative} from 'path';
-import {sync} from 'glob';
+import {globSync} from 'glob';
 
 const slash = require('slash');
 
@@ -30,10 +30,10 @@ const ignoredTests = readFileSync(path)
         return acc;
     }, {});
 
-const files: string[] = sync('../tests/reftests/**/*.html', {
+const files: string[] = globSync('../tests/reftests/**/*.html', {
     cwd: __dirname,
     root: resolve(__dirname, '../../')
-});
+}).sort();
 
 const testList = files.map((filename: string) => `/${slash(relative('../', filename))}`);
 writeFileSync(

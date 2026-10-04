@@ -1,6 +1,10 @@
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import {dirname} from 'node:path';
+const require = createRequire(import.meta.url);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from '@rollup/plugin-typescript';
 import json from '@rollup/plugin-json';
 import {resolve} from 'path';
@@ -17,7 +21,8 @@ export default {
     input: `tests/testrunner.ts`,
     output: [
         {
-            file: resolve(__dirname, '../build/testrunner.js'),
+            dir: resolve(__dirname, '../build'),
+            entryFileNames: 'testrunner.js',
             name: 'testrunner',
             format: 'iife',
             banner,
@@ -37,14 +42,15 @@ export default {
         json(),
         // Compile TypeScript files
         typescript({
-            tsconfig: resolve(__dirname, 'tsconfig.json')
+            tsconfig: resolve(__dirname, 'tsconfig.json'),
+            outDir: resolve(__dirname, '../build/typescript'),
+            declaration: false,
+            declarationDir: undefined
         }),
         // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
         commonjs({
             include: 'node_modules/**'
         }),
 
-        // Resolve source maps to the original source
-        sourceMaps()
     ]
 };

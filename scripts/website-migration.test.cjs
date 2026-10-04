@@ -47,3 +47,19 @@ test('Glamor SSR produces the original CSS and hydration markers', () => {
     assert.equal(head[1].props.id, 'glamor-ids');
     assert.ok(head[1].props.dangerouslySetInnerHTML.__html.includes(JSON.stringify(expected.ids)));
 });
+
+
+test('nested Markdown lists retain original paragraph boundaries without changing their text', () => {
+    const paragraph = text => ({type: 'paragraph', children: [{type: 'text', value: text}]});
+    const leaf = {type: 'listItem', children: [paragraph('ordinary leaf')]};
+    const nested = {type: 'listItem', children: [paragraph('nested heading'), {type: 'list', children: [leaf]}]};
+    const ast = {type: 'root', children: [{type: 'list', children: [nested]}]};
+    let generated = 0;
+    require('../www/plugins/gatsby-remark-legacy-list-layout')({markdownAST: ast, compiler: {
+        generateHTML: root => { generated++; return `<p>${root.children[0].children[0].value}</p>`; }
+    }});
+    assert.equal(generated, 1);
+    assert.deepEqual(nested.children[0], {type: 'html', value: '<p>nested heading</p>'});
+    assert.deepEqual(leaf.children[0], paragraph('ordinary leaf'));
+    assert.equal(nested.children[1].children[0], leaf);
+});

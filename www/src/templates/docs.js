@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'gatsby-link';
+import {Link, graphql} from 'gatsby';
 import back from '../images/ic_arrow_back_black_24px.svg';
 import next from '../images/ic_arrow_forward_black_24px.svg';
 import Carbon from '../components/carbon';

@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports = {
+    // Preserve the existing mix of slashless navigation and slash-ended Markdown links.
+    trailingSlash: 'ignore',
     siteMetadata: {
         title: `html2canvas`,
         packageSize: gzipSize.sync(
@@ -19,7 +21,6 @@ module.exports = {
         `gatsby-plugin-catch-links`,
         `gatsby-plugin-twitter`,
         `gatsby-plugin-react-helmet`,
-        `gatsby-plugin-glamor`,
         {
             resolve: `gatsby-plugin-typography`,
             options: {

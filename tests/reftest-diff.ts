@@ -1,4 +1,4 @@
-import {sync} from 'glob';
+import {globSync} from 'glob';
 import {resolve, basename} from 'path';
 import {existsSync, promises} from 'fs';
 import {toMatchImageSnapshot} from 'jest-image-snapshot';
@@ -10,10 +10,10 @@ const customDiffDir = resolve(__dirname, '../tmp/snapshot-diffs');
 expect.extend({toMatchImageSnapshot});
 
 describe('Image diff', () => {
-    const files: string[] = sync('../tmp/reftests/**/*.png', {
+    const files: string[] = globSync('../tmp/reftests/**/*.png', {
         cwd: __dirname,
         root: resolve(__dirname, '../../')
-    }).filter((path) => existsSync(resolve(resultsDir, basename(path))));
+    }).sort().filter((path) => existsSync(resolve(resultsDir, basename(path))));
 
     it.each(files.map((path) => basename(path)))('%s', async (filename) => {
         const previous = resolve(resultsDir, filename);

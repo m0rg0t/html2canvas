@@ -7,7 +7,7 @@ assert.ok(baselinePath, 'BASELINE_BUNDLE must point to the verified original bui
 const baseline = await readFile(baselinePath, 'utf8');
 const candidate = await readFile('dist/html2canvas.js', 'utf8');
 const minified = await readFile('dist/html2canvas.min.js', 'utf8');
-const browser = await chromium.launch();
+const browser = await chromium.launch({executablePath: process.env.CHROME_PATH || undefined});
 try {
     const page = await browser.newPage({viewport: {width: 800, height: 600}, deviceScaleFactor: 1});
     const requests = [];

@@ -20,7 +20,7 @@ async function routes(root, folder = root) {
 const pages = await routes(roots[0]);
 assert.ok(pages.length >= 9);
 assert.deepEqual(await routes(roots[1]), pages, 'Website routes changed');
-const browser = await chromium.launch();
+const browser = await chromium.launch({executablePath: process.env.CHROME_PATH || undefined});
 const blocked = new Set();
 try {
     for (const width of [1280, 390]) {
@@ -65,15 +65,14 @@ try {
                 outputs.push({content, pixels: await page.screenshot({fullPage: true, animations: 'disabled'})});
                 await context.close();
             }
+            const directory = 'test-results/website';
+            await mkdir(directory, {recursive: true});
+            const name = `${width}-${routePath.replaceAll('/', '_')}`;
+            await writeFile(`${directory}/${name}-baseline.png`, outputs[0].pixels);
+            await writeFile(`${directory}/${name}-candidate.png`, outputs[1].pixels);
+            await writeFile(`${directory}/${name}-content.json`, JSON.stringify(outputs.map(output => output.content), null, 2));
             assert.deepEqual(outputs[1].content, outputs[0].content, `Content/links differ at ${routePath} (${width}px)`);
-            if (!outputs[1].pixels.equals(outputs[0].pixels)) {
-                const directory = 'test-results/website';
-                await mkdir(directory, {recursive: true});
-                const name = `${width}-${routePath.replaceAll('/', '_')}`;
-                await writeFile(`${directory}/${name}-baseline.png`, outputs[0].pixels);
-                await writeFile(`${directory}/${name}-candidate.png`, outputs[1].pixels);
-                assert.fail(`Website pixels differ at ${routePath} (${width}px); diagnostics saved in ${directory}`);
-            }
+            assert.ok(outputs[1].pixels.equals(outputs[0].pixels), `Website pixels differ at ${routePath} (${width}px); diagnostics saved in ${directory}`);
             console.log(`Website content and pixels match: ${routePath} (${width}px)`);
         }
     }

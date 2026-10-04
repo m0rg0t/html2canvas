@@ -16,8 +16,8 @@ jobs:
       contents: read
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
@@ -31,19 +31,19 @@ jobs:
           mv html2canvas-*.tgz html2canvas.tgz
           tar --list --verbose --file=html2canvas.tgz
       - name: Upload npm pack
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: npm
           path: html2canvas.tgz
           if-no-files-found: error
       - name: Upload dist
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: dist
           path: dist
           if-no-files-found: error
       - name: Upload build
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: build
           path: build
@@ -56,8 +56,8 @@ jobs:
       contents: read
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
@@ -123,7 +123,7 @@ jobs:
       contents: read
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Verify historical simulator toolchain is available
         if: ${{ matrix.config.xcode != '' }}
         env:
@@ -133,19 +133,19 @@ jobs:
             echo "::error::This original iOS compatibility check requires $REQUIRED_XCODE. Supported hosted runners do not provide Xcode 10-13/iOS 12-15; a provisioned legacy macOS runner is required. The check has not been skipped or replaced with a newer iOS target."
             exit 1
           fi
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
       - name: Npm install
         run: npm ci --ignore-scripts --no-audit
       - name: Download library
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: dist
           path: dist
       - name: Download test-runner
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: build
           path: build
@@ -162,7 +162,7 @@ jobs:
         if: ${{ matrix.config.xvfb == true }}
         run: DISPLAY=:99 npm run karma
       - name: Upload screenshots
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: reftest-results-${{ matrix.config.targetBrowser }}
           path: tmp/reftests
@@ -242,20 +242,20 @@ jobs:
       GATSBY_TELEMETRY_DISABLED: '1'
       GATSBY_CPU_COUNT: '2'
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
       - name: Npm install
         run: npm ci --ignore-scripts --no-audit
       - name: Download library
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: dist
           path: www/static/dist
       - name: Download test results
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: reftest-results-*
           merge-multiple: true
@@ -271,7 +271,7 @@ jobs:
       - name: Build docs
         run: npm run build && npm ci --ignore-scripts --no-audit --prefix www && npm run build --prefix www
       - name: Upload docs
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: docs
           path: www/public
@@ -306,10 +306,10 @@ jobs:
       contents: read
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
@@ -318,7 +318,7 @@ jobs:
       - name: Checkout current snapshots
         run: git checkout origin/gh-pages results
       - name: Download test results
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: reftest-results-*
           merge-multiple: true
@@ -327,7 +327,7 @@ jobs:
         run: npm run reftests-diff
         continue-on-error: true
       - name: Upload diff
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: snapshot-diffs
           path: tmp/snapshot-diffs

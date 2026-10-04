@@ -4,17 +4,14 @@ const {resolve} = require('node:path');
 const {test} = require('node:test');
 const siteRequire = createRequire(resolve('www/package.json'));
 
-test('Gatsby telemetry URL normalization keeps the used repository fields', () => {
-    const parse = siteRequire('git-up');
-    for (const url of ['https://github.com/example/repo.git', 'git@github.com:example/repo.git',
-        'ssh://git@github.com/example/repo.git', 'git+https://github.com/example/repo.git']) {
-        const parsed = parse(url);
-        assert.equal(parsed.resource, 'github.com');
-        assert.equal(parsed.pathname.replace(/^\//, ''), 'example/repo.git');
+test('Gatsby 5 removes the retired URL parser and GraphQL download-loader vulnerability paths', () => {
+    const packages = Object.keys(require('../www/package-lock.json').packages);
+    for (const name of ['git-up', 'parse-url', '@graphql-tools/url-loader', 'contentful-management']) {
+        assert.equal(packages.some(path => path.endsWith(`/node_modules/${name}`) || path === `node_modules/${name}`), false, name);
     }
 });
 
-test('patched development helpers retain Webpack 4 diagnostics and argument quoting', () => {
+test('current development helpers retain diagnostics and safe argument quoting', () => {
     const format = siteRequire('react-dev-utils/formatWebpackMessages');
     const messages = format({errors: ['sample.js\nSyntaxError: synthetic failure'], warnings: ['synthetic warning']});
     assert.equal(messages.errors.length, 1);
@@ -27,9 +24,8 @@ test('patched development helpers retain Webpack 4 diagnostics and argument quot
     assert.deepEqual(shell.parse(shell.quote(values)), values);
 });
 
-test('GraphQL loader multipart data cannot inject headers', () => {
-    const loaderRequire = createRequire(siteRequire.resolve('@graphql-tools/url-loader'));
-    const FormData = loaderRequire('form-data');
+test('website multipart data cannot inject headers', () => {
+    const FormData = siteRequire('form-data');
     const data = new FormData();
     data.append('field\r\nInjected-Field: value', Buffer.from('synthetic'), {filename: 'file\r\nInjected-File: value.txt'});
     const buffer = data.getBuffer();

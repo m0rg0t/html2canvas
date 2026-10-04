@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import Link from 'gatsby-link';
+import {Link} from 'gatsby';
 import logo from '../images/logo.svg';
 import menu from '../images/ic_menu_black_24px.svg';
 
